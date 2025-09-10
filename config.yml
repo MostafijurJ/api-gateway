@@ -1,0 +1,59 @@
+http:
+  address: ":8081"
+  readTimeout: 15s
+  writeTimeout: 15s
+  idleTimeout: 60s
+
+upstream:
+  url: "http://localhost:8080"
+  timeout: 15s
+
+# Cross-origin policies
+cors:
+  enabled: true
+  allowedOrigins: ["*"]
+  allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+  allowedHeaders: ["*"]
+  exposeHeaders: []
+  allowCredentials: false
+  maxAge: 600
+
+# Authentication options
+auth:
+  apiKeys: ["DEV_KEY_12345"]
+  jwt:
+    enabled: false
+    issuer: ""
+    audience: []
+    secret: "asd345asdasd"
+
+# Simple in-memory rate limit
+rate:
+  enabled: false
+  requests: 100
+  per: 1m
+# Optional backend pools for load balancing
+pools:
+  - name: users-pool
+    strategy: rr
+    backends:
+      - url: "http://localhost:9001"
+        timeout: 10s
+      - url: "http://localhost:9002"
+        timeout: 10s
+
+routes:
+  - name: users
+    pathPrefix: "/users"
+    methods: ["GET","POST"]
+    pool: "users-pool"
+    stripPrefix: false
+  - name: inventory
+    pathPrefix: "/inventory"
+    methods: ["GET"]
+    upstream:
+      url: "http://localhost:9002"
+      timeout: 10s
+    stripPrefix: false
+
+
